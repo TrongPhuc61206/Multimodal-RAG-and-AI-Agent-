@@ -1,0 +1,22 @@
+# Môi trường ảo Python
+venv/
+env/
+.venv/
+
+# Cache của Python
+__pycache__/
+*.pyc
+
+# Dữ liệu & Weights mô hình (tránh nặng repo)
+data/
+checkpoints/
+*.bin
+*.pt
+*.safetensors
+
+# Biến môi trường/Key API
+.env
+
+# VS Code & Hệ thống
+.vscode/
+.DS_Store
