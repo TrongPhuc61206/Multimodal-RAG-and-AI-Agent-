@@ -1,28 +1,42 @@
 from src.data.loader import build_dataloader
+from src.config_loader import load_config
+from src.models.baseline import MultimodalBaselineModel
 
 def main():
-    print("=== Đang khởi chạy pipeline nạp dữ liệu (NumPy) ===")
+    print("=== Khởi chạy toàn bộ Pipeline (Config -> Loader -> Model) ===")
 
+    # 1. Đọc cấu hình
+    try:
+        config = load_config("configs/config.yaml")
+        print("Đã tải cấu hình thành công:", config["model"]["name"])
+    except Exception:
+        print("Sử dụng cấu hình mặc định.")
+        config = {"data": {"image_size": [224, 224], "batch_size": 2}, "model": {"embedding_dim": 512}}
+
+    # 2. Chuẩn bị dữ liệu giả lập
     sample_data = [
-        {"image_path": "data/sample1.jpg", "text": "   Một chú mèo vàng   ", "label": 0},
-        {"image_path": "data/sample2.jpg", "text": "Bức tranh phong cảnh ", "label": 1},
+        {"text": "Học máy nâng cao", "label": 0},
+        {"text": "Xử lý ảnh số", "label": 1},
     ]
 
-    print(f"Tổng số mẫu dữ liệu: {len(sample_data)}")
+    # 3. Nạp DataLoader
+    dataloader = build_dataloader(sample_data, batch_size=config["data"]["batch_size"])
 
-    try:
-        dataloader = build_dataloader(sample_data, batch_size=2)
-        
-        for batch_idx, batch in enumerate(dataloader):
-            print(f"\n--- Batch {batch_idx + 1} ---")
-            if "image" in batch and batch["image"].size > 0:
-                print("NumPy Image batch shape:", batch["image"].shape)  # Ví dụ: [2, 224, 224, 3]
-            if "text" in batch:
-                print("Văn bản đã làm sạch:", batch["text"])
-                
-    except FileNotFoundError as e:
-        print(f"\n[Lưu ý]: {e}")
-        print("-> Hãy thêm ảnh mẫu vào thư mục `data/` để test đầy đủ pipeline!")
+    # 4. Khởi tạo mô hình
+    model = MultimodalBaselineModel(embedding_dim=config["model"]["embedding_dim"])
+
+    # 5. Chạy thử nghiệm qua các batch
+    for batch_idx, batch in enumerate(dataloader):
+        print(f"\n--- Xử lý Batch {batch_idx + 1} ---")
+        if "image" in batch and batch["image"].size > 0:
+            print("Shape ảnh đầu vào:", batch["image"].shape)
+            
+            # Đưa qua mô hình lấy embedding
+            embeddings = model.forward(batch["image"])
+            print("Shape embedding đầu ra từ mô hình:", embeddings.shape)
+            
+        if "text" in batch:
+            print("Văn bản đi kèm:", batch["text"])
 
 if __name__ == "__main__":
     main()
