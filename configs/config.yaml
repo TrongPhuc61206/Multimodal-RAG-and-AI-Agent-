@@ -1,0 +1,13 @@
+data:
+  image_size: [224, 224]
+  batch_size: 4
+  data_dir: "data/"
+
+model:
+  name: "multimodal_baseline"
+  embedding_dim: 512
+  hidden_dim: 256
+
+training:
+  epochs: 10
+  learning_rate: 0.001
